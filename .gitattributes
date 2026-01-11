@@ -1,0 +1,2 @@
+Assets/JoyconLib-master/Packages/com.lookingglass.joyconlib/JoyconLib_plugins/win32/hidapi.dll filter=lfs diff=lfs merge=lfs -text
+Assets/JoyconLib-master/Packages/com.lookingglass.joyconlib/JoyconLib_plugins/win64/hidapi.dll filter=lfs diff=lfs merge=lfs -text
