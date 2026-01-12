@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class HammerImpactFinal : MonoBehaviour
+public class HammerImpactFX : MonoBehaviour
 {
     [Header("Referencias")]
     public JoyconObject hammerJoyconScript;

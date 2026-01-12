@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Chisel
+  - Stone
   layers:
   - Default
   - TransparentFX
