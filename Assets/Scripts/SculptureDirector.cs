@@ -15,9 +15,19 @@ public class SculptureDirector : MonoBehaviour
     private bool estaRotando = false;
     private float tiempoEsperaDeteccion = 2f;
 
+    public GameObject[] piedras;
+    public Material materialPiedras;
+    public ParticleSystem particulas;
+
+    private void Awake()
+    {
+        materialPiedras.color = new Color(materialPiedras.color.r, materialPiedras.color.g, materialPiedras.color.b, 1f);
+    }
+
     void Start()
     {
-        InvokeRepeating("CheckPiedrasRestantes", tiempoEsperaDeteccion, 0.5f);
+        InvokeRepeating("CheckPiedrasRestantes", tiempoEsperaDeteccion, 3f);
+        particulas.Stop();
     }
 
     void CheckPiedrasRestantes()
@@ -53,7 +63,7 @@ public class SculptureDirector : MonoBehaviour
 
         Debug.Log($"<color=orange>¡ZONA LIMPIA! Rotando al punto {puntoActual + 1}</color>");
 
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(3f);
 
         Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, anguloPorPunto, 0);
         float elapsed = 0f;
@@ -73,7 +83,48 @@ public class SculptureDirector : MonoBehaviour
         {
             Debug.Log("<color=cyan>¡ESCULTURA FINALIZADA!</color>");
             CancelInvoke("CheckPiedrasRestantes");
+
+            StartCoroutine(DesactivarParticulasGradualmente());
         }
+    }
+
+    IEnumerator DesactivarParticulasGradualmente()
+    {
+        particulas.Play();
+        yield return new WaitForSeconds(5f);
+
+        float duracion = 2f;
+        float tiempo = 0f;
+        Vector3 escalaInicial = particulas.transform.localScale;
+
+        var main = particulas.main;
+        float startSizeInicial = main.startSize.constant;
+
+        while (tiempo < duracion)
+        {
+            //El material se vuelve transparente
+            float progreso = tiempo / duracion;
+            float transparente = Mathf.Lerp(1f, 0f, progreso);
+            materialPiedras.color = new Color(materialPiedras.color.r, materialPiedras.color.g, materialPiedras.color.b, transparente);
+            tiempo += Time.deltaTime;
+            yield return null;
+        }
+
+        foreach (var i in piedras)
+        {
+            i.SetActive(false);
+        }
+        while (tiempo < duracion)
+        {
+            tiempo += Time.deltaTime;
+            float progreso = tiempo / duracion;
+            main.startSize = Mathf.Lerp(startSizeInicial, 0f, progreso);
+            yield return null;
+        }
+
+        particulas.Stop();
+        particulas.transform.localScale = escalaInicial;
+        particulas.gameObject.SetActive(false);
     }
 
     void OnDrawGizmos()
