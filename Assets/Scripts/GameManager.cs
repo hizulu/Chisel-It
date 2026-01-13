@@ -16,6 +16,10 @@ public class GameManager : MonoBehaviour
     private bool esPausado = false;
     public MenuButton[] menuButton;
     public SculptureDirector sculptureDirector;
+    private int seleccionActual = 0;
+
+    private float proximoCambioPermitido = 0f;
+    public float cooldownSeleccion = 3.0f;
 
     void Start() { Resume(); }
 
@@ -29,10 +33,6 @@ public class GameManager : MonoBehaviour
         if (esPausado) GestionarSeleccionMenu();
     }
 
-    private int seleccionActual = 0;
-
-    private float proximoCambioPermitido = 0f;
-    public float cooldownSeleccion = 3.0f;
     void GestionarSeleccionMenu()
     {
         // Si aún no ha pasado el tiempo de espera, no leemos la inclinación
