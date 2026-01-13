@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Chisel
   - Stone
+  - PauseStone
   layers:
   - Default
   - TransparentFX

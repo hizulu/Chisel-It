@@ -3,16 +3,14 @@ using System.Collections;
 
 public class HammerImpactFX : MonoBehaviour
 {
-    [Header("Referencias")]
     public JoyconObject hammerJoyconScript;
     public Transform hammerHeadVisual;
     public Transform chiselHeadVisual;
     public Transform puntoDeteccionPunta;
 
-    [Header("Ajustes")]
     public float impactDistance = 1.70f;
     public float minForce = 1.15f;
-    public float radioDeRotura = 0.4f;
+    public float radioDeRotura = 0.5f;
 
     private float cooldown = 0.4f;
     private float nextHit;
@@ -24,28 +22,32 @@ public class HammerImpactFX : MonoBehaviour
         float dist = Vector3.Distance(hammerHeadVisual.position, chiselHeadVisual.position);
         float force = hammerJoyconScript.joycon.GetAccel().magnitude;
 
-        if (dist <= impactDistance)
+        if (dist <= impactDistance && force >= minForce && Time.unscaledTime > nextHit)
         {
-            if (force >= minForce && Time.time > nextHit)
-            {
-                EjecutarImpacto(force);
-                nextHit = Time.time + cooldown;
-            }
+            EjecutarImpacto(force);
+            nextHit = Time.unscaledTime + cooldown;
         }
     }
 
     void EjecutarImpacto(float force)
     {
-        Debug.Log($"<color=green>¡GOLPE!</color> Fuerza: {force}");
+        hammerJoyconScript.joycon.SetRumble(100, 200, 100);
+        Invoke("StopRumble", 0.1f);
 
-        hammerJoyconScript.joycon.SetRumble(160, 320, 150);
-        Invoke("StopRumble", 0.2f);
+        Collider[] hitColliders = Physics.OverlapSphere(puntoDeteccionPunta.position, radioDeRotura);
 
-        Collider[] piedras = Physics.OverlapSphere(puntoDeteccionPunta.position, radioDeRotura);
-
-        foreach (Collider col in piedras)
+        foreach (Collider col in hitColliders)
         {
-            if (col.CompareTag("Stone"))
+            if (col.CompareTag("PauseStone"))
+            {
+                MenuButton btn = col.GetComponentInParent<MenuButton>();
+                if (btn != null)
+                {
+                    btn.TriggerAction();
+                }
+                break;
+            }
+            else if (col.CompareTag("Stone") && Time.timeScale != 0)
             {
                 LiberarPieza(col.gameObject);
                 break;
@@ -61,8 +63,6 @@ public class HammerImpactFX : MonoBehaviour
             rb.isKinematic = false;
             rb.useGravity = true;
             pieza.tag = "Untagged";
-
-            rb.AddExplosionForce(200f, puntoDeteccionPunta.position, 1f);
             StartCoroutine(DesactivarDespuesDeEspera(pieza, 4f));
         }
     }
@@ -73,18 +73,5 @@ public class HammerImpactFX : MonoBehaviour
         pieza.SetActive(false);
     }
 
-    void StopRumble()
-    {
-        if (hammerJoyconScript.joycon != null)
-            hammerJoyconScript.joycon.SetRumble(0, 0, 0);
-    }
-
-    void OnDrawGizmos()
-    {
-        if (puntoDeteccionPunta != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(puntoDeteccionPunta.position, radioDeRotura);
-        }
-    }
+    void StopRumble() { if (hammerJoyconScript.joycon != null) hammerJoyconScript.joycon.SetRumble(0, 0, 0); }
 }

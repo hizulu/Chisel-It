@@ -22,12 +22,12 @@ public class SculptureDirector : MonoBehaviour
     private void Awake()
     {
         materialPiedras.color = new Color(materialPiedras.color.r, materialPiedras.color.g, materialPiedras.color.b, 1f);
+        particulas.gameObject.SetActive(false);
     }
 
     void Start()
     {
         InvokeRepeating("CheckPiedrasRestantes", tiempoEsperaDeteccion, 3f);
-        particulas.Stop();
     }
 
     void CheckPiedrasRestantes()
@@ -90,6 +90,7 @@ public class SculptureDirector : MonoBehaviour
 
     IEnumerator DesactivarParticulasGradualmente()
     {
+        particulas.gameObject.SetActive(true);
         particulas.Play();
         yield return new WaitForSeconds(5f);
 

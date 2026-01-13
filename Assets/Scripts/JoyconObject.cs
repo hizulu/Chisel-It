@@ -12,18 +12,17 @@ public class JoyconObject : MonoBehaviour
     public bool invertSelfRotation = true;
     public Vector3 rotationOffset;
 
+    [Header("Configuración Reposo")]
+    public float tiempoRequerido = 2.0f;
+    private float contadorTiempo = 0f;
+    public bool estaHorizontalYQuieto;
+
     IEnumerator Start()
     {
         yield return new WaitForSeconds(1.2f);
-
-        if (JoyconManager.Instance == null || JoyconManager.Instance.j == null)
-        {
-            Debug.LogError("Error: JoyconManager no encontrado o lista de mandos vacía.");
-            yield break;
-        }
+        if (JoyconManager.Instance == null || JoyconManager.Instance.j == null) yield break;
 
         List<Joycon> joycons = JoyconManager.Instance.j;
-
         joycon = null;
 
         for (int i = 0; i < joycons.Count; i++)
@@ -44,38 +43,59 @@ public class JoyconObject : MonoBehaviour
             }
         }
 
-        if (joycon == null)
-        {
-            Debug.LogError($"OJO: No se encontró un Joy-con {(isLeftController ? "Izquierdo" : "Derecho")} conectado.");
-        }
-        else
-        {
-            Recalibrate();
-        }
+        if (joycon != null) Recalibrate();
     }
 
     void Update()
     {
         if (joycon == null) return;
 
-        Quaternion raw = joycon.GetVector();
+        ActualizarRotacion();
 
-        float x = raw.x;
-        float y = raw.y;
-        float z = raw.z;
-        float w = raw.w;
+        ActualizarEstadoReposo();
+        Debug.Log($"<color=magenta>Estado Reposo ({(isLeftController ? "Cincel" : "Martillo")}):</color> {estaHorizontalYQuieto}");
 
-        if (invertSelfRotation) y = -y;
-
-        Quaternion fixedOrientation = new Quaternion(x, z, y, w);
-
-        Quaternion calibratedOrientation = Quaternion.Inverse(calibrationRotation) * fixedOrientation;
-        transform.rotation = calibratedOrientation * Quaternion.Euler(rotationOffset);
-
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || joycon.GetButtonDown(Joycon.Button.SHOULDER_2))
         {
             Recalibrate();
         }
+    }
+
+    void ActualizarRotacion()
+    {
+        Quaternion raw = joycon.GetVector();
+        float y = invertSelfRotation ? -raw.y : raw.y;
+        Quaternion fixedOrientation = new Quaternion(raw.x, raw.z, y, raw.w);
+        Quaternion calibratedOrientation = Quaternion.Inverse(calibrationRotation) * fixedOrientation;
+        Quaternion finalTarget = calibratedOrientation * Quaternion.Euler(rotationOffset);
+        transform.rotation = Quaternion.Slerp(transform.rotation, finalTarget, Time.deltaTime * 20f);
+    }
+
+    void ActualizarEstadoReposo()
+    {
+        Vector3 accel = joycon.GetAccel();
+
+        bool quieto = accel.magnitude > 0.8f && accel.magnitude < 1.2f;
+        bool plano = Mathf.Abs(accel.y) > 0.85f || Mathf.Abs(accel.z) > 0.85f;
+
+        if (quieto && plano)
+        {
+            contadorTiempo += Time.deltaTime;
+            if (contadorTiempo >= tiempoRequerido)
+            {
+                estaHorizontalYQuieto = true;
+            }
+        }
+        else
+        {
+            contadorTiempo = 0f;
+            estaHorizontalYQuieto = false;
+        }
+    }
+
+    public bool CheckEstadoReposo()
+    {
+        return estaHorizontalYQuieto;
     }
 
     public void Recalibrate()
@@ -85,7 +105,6 @@ public class JoyconObject : MonoBehaviour
             Quaternion raw = joycon.GetVector();
             float y = invertSelfRotation ? -raw.y : raw.y;
             calibrationRotation = new Quaternion(raw.x, raw.z, y, raw.w);
-            Debug.Log("Joy-con recalibrado.");
         }
     }
 }
