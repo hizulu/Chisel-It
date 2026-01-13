@@ -98,7 +98,7 @@ public class GameManager : MonoBehaviour
             foreach (var btn in menuButtons) if (btn != null) btn.Reload();
         }
 
-        if (sculptureDirector != null) sculptureDirector.enabled = !pausar;
+        //if (sculptureDirector != null) sculptureDirector.enabled = !pausar;
         if (menuPausa) menuPausa.SetActive(pausar);
         if (elementosEscena) elementosEscena.SetActive(!pausar);
     }
@@ -122,7 +122,12 @@ public class GameManager : MonoBehaviour
         ConfigurarEstadoMenu(false);
         menuInicio = false;
         seleccionActual = 0;
-                
+
+        if (menuButtons != null)
+        {
+            foreach (var btn in menuButtons) if (btn != null) btn.Reload();
+        }
+
         if (grupoHerramientas != null && posBaseHerramientas != null)
         {
             MoverGrupo(posBaseHerramientas);
