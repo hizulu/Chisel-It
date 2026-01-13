@@ -1,4 +1,6 @@
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -70,6 +72,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void StartGame()
+    {
+        SceneManager.LoadScene(1);
+    }
+
     public void Pause()
     {
         esPausado = true;
@@ -99,13 +106,14 @@ public class GameManager : MonoBehaviour
         //grupoHerramientas.transform.rotation = posBaseHerramientas.rotation;
     }
 
+    public void QuitToInitialScene()
+    {
+        SceneManager.LoadScene(0);
+    }
+
     public void QuitGame()
     {
         Debug.Log("<color=red> Saliendo del juego...</color>");
         Application.Quit();
-        foreach (var menuButton in menuButton)
-        {
-            menuButton.Reload();
-        }
     }
 }
