@@ -16,6 +16,7 @@ public class JoyconObject : MonoBehaviour
     public float tiempoRequerido = 2.0f;
     private float contadorTiempo = 0f;
     public bool estaHorizontalYQuieto;
+    private bool yaRecalibradoEnEsteReposo = false;
 
     IEnumerator Start()
     {
@@ -28,17 +29,14 @@ public class JoyconObject : MonoBehaviour
         for (int i = 0; i < joycons.Count; i++)
         {
             bool jIsLeft = joycons[i].isLeft;
-
             if (isLeftController && jIsLeft)
             {
                 joycon = joycons[i];
-                Debug.Log($"<color=cyan>Cincel (IZQ)</color> asignado al Joy-con #{i}");
                 break;
             }
             else if (!isLeftController && !jIsLeft)
             {
                 joycon = joycons[i];
-                Debug.Log($"<color=yellow>Martillo (DER)</color> asignado al Joy-con #{i}");
                 break;
             }
         }
@@ -51,36 +49,43 @@ public class JoyconObject : MonoBehaviour
         if (joycon == null) return;
 
         ActualizarRotacion();
-
         ActualizarEstadoReposo();
-        Debug.Log($"<color=magenta>Estado Reposo ({(isLeftController ? "Cincel" : "Martillo")}):</color> {estaHorizontalYQuieto}");
 
         if (Input.GetKeyDown(KeyCode.Space) || joycon.GetButtonDown(Joycon.Button.SHOULDER_2))
         {
             Recalibrate();
+        }
+
+        if (estaHorizontalYQuieto && !yaRecalibradoEnEsteReposo)
+        {
+            Recalibrate();
+            yaRecalibradoEnEsteReposo = true;
         }
     }
 
     void ActualizarRotacion()
     {
         Quaternion raw = joycon.GetVector();
+
         float y = invertSelfRotation ? -raw.y : raw.y;
         Quaternion fixedOrientation = new Quaternion(raw.x, raw.z, y, raw.w);
-        Quaternion calibratedOrientation = Quaternion.Inverse(calibrationRotation) * fixedOrientation;
-        Quaternion finalTarget = calibratedOrientation * Quaternion.Euler(rotationOffset);
-        transform.rotation = Quaternion.Slerp(transform.rotation, finalTarget, Time.deltaTime * 20f);
+
+        Quaternion finalTarget = Quaternion.Inverse(calibrationRotation) * fixedOrientation;
+        finalTarget *= Quaternion.Euler(rotationOffset);
+
+        transform.localRotation = Quaternion.Slerp(transform.localRotation, finalTarget, Time.unscaledDeltaTime * 25f);
     }
 
     void ActualizarEstadoReposo()
     {
         Vector3 accel = joycon.GetAccel();
 
-        bool quieto = accel.magnitude > 0.8f && accel.magnitude < 1.2f;
-        bool plano = Mathf.Abs(accel.y) > 0.85f || Mathf.Abs(accel.z) > 0.85f;
+        bool quieto = accel.magnitude > 0.95f && accel.magnitude < 1.05f;
+        bool plano = Mathf.Abs(accel.y) > 0.9f || Mathf.Abs(accel.z) > 0.9f;
 
         if (quieto && plano)
         {
-            contadorTiempo += Time.deltaTime;
+            contadorTiempo += Time.unscaledDeltaTime;
             if (contadorTiempo >= tiempoRequerido)
             {
                 estaHorizontalYQuieto = true;
@@ -90,6 +95,7 @@ public class JoyconObject : MonoBehaviour
         {
             contadorTiempo = 0f;
             estaHorizontalYQuieto = false;
+            yaRecalibradoEnEsteReposo = false;
         }
     }
 
@@ -105,6 +111,8 @@ public class JoyconObject : MonoBehaviour
             Quaternion raw = joycon.GetVector();
             float y = invertSelfRotation ? -raw.y : raw.y;
             calibrationRotation = new Quaternion(raw.x, raw.z, y, raw.w);
+
+            transform.localRotation = Quaternion.identity;
         }
     }
 }

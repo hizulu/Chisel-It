@@ -9139,11 +9139,10 @@ MonoBehaviour:
   posPiedraResume: {fileID: 468870218}
   posPiedraExit: {fileID: 439574149}
   grupoHerramientas: {fileID: 899929443}
-  menuButton:
-  - {fileID: 61846368}
-  - {fileID: 998561574}
+  menuButtons: []
   sculptureDirector: {fileID: 0}
   cooldownSeleccion: 3
+  menuInicio: 1
 --- !u!4 &1479032837
 Transform:
   m_ObjectHideFlags: 0

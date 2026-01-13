@@ -9872,11 +9872,10 @@ MonoBehaviour:
   posPiedraResume: {fileID: 976404906}
   posPiedraExit: {fileID: 1818912107}
   grupoHerramientas: {fileID: 909851665}
-  menuButton:
-  - {fileID: 920586302}
-  - {fileID: 286945329}
+  menuButtons: []
   sculptureDirector: {fileID: 1622389393}
   cooldownSeleccion: 3
+  menuInicio: 0
 --- !u!4 &755153353
 Transform:
   m_ObjectHideFlags: 0
@@ -11999,7 +11998,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1234125671
 Transform:
   m_ObjectHideFlags: 0

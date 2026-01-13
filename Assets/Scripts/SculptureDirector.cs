@@ -132,7 +132,7 @@ public class SculptureDirector : MonoBehaviour
     {
         if (puntoDeteccionPunta != null)
         {
-            Gizmos.color = Color.green; // Verde para el sensor del Director
+            Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(puntoDeteccionPunta.position, radioDeteccion);
         }
     }
